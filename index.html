@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Improvement Ladder</title>
+<meta name="description" content="Three dares a day. Proof over hype.">
+<meta name="theme-color" content="#221d32">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Improvement Ladder">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+:root{
+  --bg:#221d32; --bg2:#2a2344;
+  --card:rgba(255,255,255,.055); --card-solid:#2c2546;
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.20);
+  --text:#f4f1fb; --text2:#b8b0d2; --text3:#837b9e;
+  --ink:#26201a; --ink2:rgba(38,32,26,.62); --ink3:rgba(38,32,26,.42); --cream:#f8f2e4;
+  --amber:#f6d878; --coral:#f7a66b; --rose:#ee6fa4;
+  --pink:#f4a9c4; --sky:#a8c9ee; --sage:#b5d192; --lav:#cbbbf2;
+  --glow:rgba(246,216,120,.4);
+  --dawn:linear-gradient(120deg,#f6d878,#f4a9c4 60%,#cbbbf2);
+  --r:24px; --r-sm:16px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  --serif:ui-serif,"New York",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{
+  margin:0;font-family:var(--sans);color:var(--text);background:var(--bg);
+  min-height:100dvh;touch-action:manipulation;overscroll-behavior-y:none;
+  -webkit-font-smoothing:antialiased;
+}
+#bg{position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(55% 38% at 88% -6%, rgba(244,169,196,.16), rgba(244,169,196,0) 62%),
+  radial-gradient(60% 40% at -8% 30%, rgba(168,201,238,.10), rgba(168,201,238,0) 60%),
+  radial-gradient(70% 42% at 50% 112%, rgba(246,216,120,.14), rgba(246,216,120,0) 58%),
+  linear-gradient(#221d32 0%, #272040 60%, #2d2348 100%);}
+button{font-family:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:8px}
+input,textarea,select{font-family:inherit;font-size:16px;color:var(--text)}
+::placeholder{color:var(--text3)}
+h1,h2,h3{margin:0;font-weight:700}
+
+.wrap{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 112px)}
+.view{display:none}.view.active{display:block}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
+.brand svg{color:var(--amber)}
+.datechip{font-size:.85rem;color:var(--text2)}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
+.tile{border-radius:var(--r-sm);padding:11px 6px;text-align:center;color:var(--ink)}
+.stats .tile:nth-child(1){background:var(--coral)}
+.stats .tile:nth-child(2){background:var(--sage)}
+.stats .tile:nth-child(3){background:var(--amber)}
+.stats .tile:nth-child(4){background:var(--lav)}
+.tile .ic{color:var(--ink2);height:18px;display:flex;justify-content:center;margin-bottom:2px}
+.tile .num{font-size:1.3rem;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}
+.tile .lbl{font-size:.68rem;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.tile.hot{box-shadow:0 0 0 2.5px var(--bg),0 0 0 5px var(--coral)}
+
+/* ---------- ladder / level progress ---------- */
+.ladder{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:16px}
+.rungs{display:flex;gap:4px;align-items:flex-end;height:26px;margin-bottom:8px}
+.rung{flex:1;height:12px;border-radius:99px;background:rgba(255,255,255,.09);transition:background .3s}
+.rung.lit{background:var(--amber)}
+.rung.lit:nth-child(3n+2){background:var(--pink)}
+.rung.lit:nth-child(3n){background:var(--sky)}
+.rung.cur{height:24px;background:var(--rose);box-shadow:0 0 10px rgba(238,111,164,.5)}
+.lvl-line{display:flex;justify-content:space-between;align-items:baseline;font-size:.85rem;color:var(--text2)}
+.lvl-line b{color:var(--text);font-size:1rem}
+.lvlbar{height:7px;border-radius:99px;background:rgba(255,255,255,.09);margin-top:8px;overflow:hidden}
+.lvlbar i{display:block;height:100%;border-radius:99px;background:var(--dawn);transition:width .5s ease}
+
+/* ---------- quote small ---------- */
+.quote-sm{font-family:var(--serif);font-style:italic;color:var(--text2);font-size:.95rem;line-height:1.55;padding:2px 4px 0;margin:0 0 16px}
+.quote-sm .who{font-family:var(--sans);font-style:normal;font-size:.78rem;color:var(--text3);display:block;margin-top:4px}
+
+/* ---------- day status ---------- */
+.daystatus{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:2px 2px 12px;font-size:.95rem;color:var(--text2)}
+.ds-txt.n3{background:var(--dawn);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800;letter-spacing:.4px}
+.pts-chip{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;color:var(--amber);font-size:.9rem}
+
+/* ---------- contexts ---------- */
+.cxrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.cx-chip{font-size:.78rem;padding:5px 11px;border-radius:99px;border:1px solid var(--line);color:var(--text2);background:var(--card)}
+.cx-edit{font-size:.78rem;color:var(--amber);padding:6px 10px;min-height:32px}
+
+/* ---------- dares ---------- */
+.dares{display:flex;flex-direction:column;gap:13px}
+.dare{border-radius:var(--r);padding:16px 17px;transition:box-shadow .3s;position:relative;color:var(--ink)}
+.dare.p0{background:var(--amber)}
+.dare.p1{background:var(--pink)}
+.dare.p2{background:var(--sky)}
+.dare .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.dare .t-chip{border-color:var(--ink3);color:var(--ink2)}
+.t-chip{font-size:.7rem;font-weight:800;letter-spacing:.8px;color:var(--text3);border:1.5px solid var(--line2);border-radius:99px;padding:3px 9px}
+.star{background:rgba(38,32,26,.85);color:var(--amber);font-size:.7rem;font-weight:800;letter-spacing:.5px;border-radius:99px;padding:4px 9px}
+.dare .txt{font-size:1.03rem;line-height:1.5;margin-bottom:13px;font-weight:600}
+.done-btn{width:100%;min-height:50px;border-radius:99px;border:2px solid rgba(38,32,26,.75);font-weight:800;font-size:.95rem;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s}
+.done-btn:active{transform:scale(.985)}
+.dare.done .done-btn{background:rgba(38,32,26,.92);border-color:transparent;color:var(--cream)}
+.day-n2 .dare.done{box-shadow:0 6px 20px rgba(246,216,120,.18)}
+.day-n3 .dare.done{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--rose),0 8px 24px rgba(238,111,164,.3)}
+.note-in{width:100%;margin-top:11px;background:rgba(255,255,255,.55);border:1.5px solid rgba(38,32,26,.22);border-radius:99px;padding:12px 16px;color:var(--ink)}
+.note-in::placeholder{color:rgba(38,32,26,.48)}
+.note-in:focus{outline:none;border-color:rgba(38,32,26,.6)}
+.reroll-btn{width:100%;min-height:50px;margin-top:4px;border-radius:99px;border:1.5px dashed var(--line2);color:var(--text2);font-size:.9rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+.reroll-btn:disabled{opacity:.4;cursor:default}
+
+/* ---------- journal ---------- */
+.journal{background:var(--lav);border-radius:var(--r);padding:16px 17px;margin-top:20px;color:var(--ink)}
+.journal .lbl{display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:var(--ink2);font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.journal .prompt{font-family:var(--serif);font-style:italic;color:rgba(38,32,26,.8);font-size:1rem;margin-bottom:10px}
+.journal textarea{width:100%;min-height:96px;background:rgba(255,255,255,.55);border:1.5px solid rgba(38,32,26,.22);border-radius:var(--r-sm);padding:12px 14px;line-height:1.5;resize:vertical;color:var(--ink)}
+.journal textarea::placeholder{color:rgba(38,32,26,.48)}
+.journal textarea:focus{outline:none;border-color:rgba(38,32,26,.6)}
+.journal .saved{color:var(--ink2);font-size:.75rem;opacity:0;transition:opacity .3s}
+.journal .saved.show{opacity:1}
+.jhint{color:var(--ink2);font-size:.75rem;margin:8px 0 0}
+
+/* ---------- section headings ---------- */
+.sec{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:22px 2px 10px;font-weight:700}
+
+/* ---------- heatmap ---------- */
+.month{margin-bottom:14px}
+.month .mlbl{font-size:.78rem;color:var(--text2);margin-bottom:6px;font-weight:600}
+.cells{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cell{aspect-ratio:1;border-radius:6px;background:rgba(255,255,255,.05);position:relative;min-width:0;border:0;padding:0}
+.cell.off{visibility:hidden}
+.cell.drawn0{background:rgba(255,255,255,.11)}
+.cell.c1{background:var(--amber)}
+.cell.c2{background:var(--coral);box-shadow:0 0 6px rgba(247,166,107,.35)}
+.cell.c3{background:var(--rose);box-shadow:0 0 9px rgba(238,111,164,.55)}
+.cell.today{outline:2px solid var(--cream);outline-offset:1.5px}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
+.dow span{font-size:.6rem;color:var(--text3);text-align:center}
+
+/* ---------- climb (day list) ---------- */
+.climb{position:relative;display:flex;flex-direction:column;gap:10px;padding:4px 0 4px}
+.climb::before,.climb::after{content:"";position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.07);border-radius:2px}
+.climb::before{left:7px}.climb::after{right:7px}
+.daycard{position:relative;z-index:1;margin:0 18px;background:var(--card-solid);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;text-align:left;width:auto;display:block;transition:border-color .25s}
+.daycard:active{border-color:var(--line2)}
+.daycard .row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.daycard .dt{font-weight:700;font-size:.92rem}
+.daycard .cnt{font-size:.78rem;color:var(--text3);font-variant-numeric:tabular-nums}
+.daycard .sub{font-size:.82rem;color:var(--text2);line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.daycard.n0{opacity:.5}
+.daycard.n2{border-color:rgba(247,166,107,.6);box-shadow:0 0 14px rgba(247,166,107,.14)}
+.daycard.n2 .cnt{color:var(--coral)}
+.daycard.n3{background:var(--pink);border-color:transparent;color:var(--ink);box-shadow:0 6px 22px rgba(238,111,164,.28)}
+.daycard.n3 .sub{color:var(--ink2)}
+.daycard.n3 .cnt{color:var(--ink);font-weight:800}
+.empty{color:var(--text2);text-align:center;padding:36px 20px;font-family:var(--serif);font-style:italic;line-height:1.7}
+
+/* ---------- settings ---------- */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;margin-bottom:14px}
+.panel h3{font-size:.95rem;margin-bottom:4px}
+.panel p{color:var(--text2);font-size:.85rem;line-height:1.5;margin:4px 0 12px}
+.btn{min-height:50px;border-radius:99px;font-weight:800;font-size:.95rem;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 18px;width:100%}
+.btn-primary{background:var(--amber);color:var(--ink)}
+.btn-primary:active{filter:brightness(1.06)}
+.btn-ghost{border:1.5px solid var(--line2);color:var(--text)}
+.btn-ghost:active{background:rgba(255,255,255,.06)}
+.btn-danger{border:1.5px solid rgba(238,111,164,.6);color:var(--rose)}
+.btn+.btn{margin-top:10px}
+.custom-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
+.custom-item:first-of-type{border-top:0}
+.custom-item .cx{flex:1}
+.custom-item .cx .t{font-size:.92rem;line-height:1.45}
+.custom-item .cx .m{font-size:.75rem;color:var(--text3);margin-top:2px}
+.mini{min-height:40px;min-width:44px;border-radius:10px;border:1px solid var(--line);color:var(--text2);font-size:.8rem;padding:0 10px}
+.about{color:var(--text3);font-size:.8rem;text-align:center;line-height:1.7;margin-top:22px}
+.about .core{font-family:var(--serif);font-style:italic;color:var(--text2);font-size:.92rem}
+
+/* ---------- tabbar ---------- */
+.tabbar{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 12px);z-index:40;display:flex;justify-content:space-between;gap:6px;max-width:528px;margin:0 auto;background:rgba(30,25,45,.88);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:99px;padding:7px;box-shadow:0 10px 30px rgba(10,6,20,.45)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;color:var(--text3);font-size:.68rem;font-weight:700;border-radius:99px;transition:color .2s,background .2s}
+.tab.active{color:var(--ink);background:var(--amber)}
+
+/* ---------- overlays ---------- */
+.ovl{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(5,7,18,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .25s}
+.ovl.center{align-items:center;padding:24px}
+.ovl.show{opacity:1;pointer-events:auto}
+.sheet{width:100%;max-width:560px;background:#2e2749;border:1px solid var(--line);border-radius:26px 26px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom) + 20px);transform:translateY(30px);transition:transform .3s cubic-bezier(.2,.8,.25,1);max-height:88dvh;overflow-y:auto}
+.ovl.show .sheet{transform:none}
+.ovl.center .sheet{border-radius:22px;padding-bottom:20px;transform:scale(.96)}
+.ovl.center.show .sheet{transform:none}
+.sheet h2{font-size:1.15rem;margin-bottom:4px}
+.sheet .sub{color:var(--text2);font-size:.88rem;margin:0 0 16px;line-height:1.5}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:20px}
+.chip{min-height:46px;padding:0 18px;border-radius:99px;border:1.5px solid var(--line2);color:var(--text2);font-weight:700;font-size:.92rem;display:flex;align-items:center;transition:all .2s}
+.chip.on{background:var(--amber);border-color:var(--amber);color:var(--ink)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;font-weight:700}
+.field input[type=text],.field select{width:100%;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;min-height:48px}
+.field input:focus,.field select:focus{outline:none;border-color:rgba(247,178,103,.5)}
+.switchrow{display:flex;align-items:center;justify-content:space-between;min-height:48px}
+.switchrow .cap{font-size:.9rem}
+
+/* ---------- quote overlay ---------- */
+#quoteOvl{background:linear-gradient(#1d1830 0%,#272040 62%,#332a52 100%);overflow:hidden}
+#quoteOvl::before,#quoteOvl::after{content:"";position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none}
+#quoteOvl::before{width:65vw;height:65vw;background:var(--pink);opacity:.28;top:-8%;right:-18%}
+#quoteOvl::after{width:75vw;height:75vw;background:var(--amber);opacity:.22;bottom:-16%;left:-22%}
+.qwrap{max-width:520px;width:100%;padding:0 30px calc(env(safe-area-inset-bottom) + 46px);display:flex;flex-direction:column;justify-content:flex-end;min-height:100dvh}
+.qsun{width:56px;height:56px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 10px rgba(246,216,120,.18),0 0 46px 12px rgba(246,216,120,.4);margin-bottom:34px;animation:rise 1.4s cubic-bezier(.2,.7,.3,1) both}
+@keyframes rise{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}
+.qtxt{font-family:var(--serif);font-style:italic;font-size:1.4rem;line-height:1.6;animation:fadeup 1s .35s both}
+.qwho{color:var(--text2);margin:16px 0 40px;font-size:.92rem;animation:fadeup 1s .6s both}
+.qbtn{animation:fadeup 1s .85s both}
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ---------- level up ---------- */
+.lvlup{text-align:center;padding:10px 6px 4px}
+.lvlup .cap{font-size:.72rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.lvlup .big{font-size:4rem;font-weight:800;background:var(--dawn);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1;margin-bottom:12px;animation:pop .55s cubic-bezier(.2,.9,.3,1.4) both}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+.lvlup .note{color:var(--text2);font-size:.92rem;line-height:1.55;margin-bottom:20px}
+
+/* ---------- detail modal ---------- */
+.det-dare{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);align-items:flex-start}
+.det-dare:first-of-type{border-top:0}
+.det-dare .ic{flex:0 0 22px;height:22px;color:var(--text3);margin-top:1px}
+.det-dare.done .ic{color:var(--amber)}
+.det-dare .t{font-size:.92rem;line-height:1.5}
+.det-dare .n{font-family:var(--serif);font-style:italic;color:var(--text2);font-size:.86rem;margin-top:3px}
+.det-j{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-size:.9rem;line-height:1.6;color:var(--text2);font-family:var(--serif);font-style:italic;white-space:pre-wrap}
+
+/* ---------- toast ---------- */
+#toasts{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 104px);z-index:80;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.toast{background:var(--amber);color:var(--ink);font-size:.9rem;font-weight:800;border-radius:99px;padding:12px 22px;box-shadow:0 8px 26px rgba(10,6,20,.5);animation:toastin .3s both;max-width:86vw;text-align:center}
+@keyframes toastin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.toast.out{transition:opacity .4s;opacity:0}
+
+/* ---------- sparks ---------- */
+.spark{position:fixed;width:7px;height:7px;border-radius:50%;background:var(--dawn);z-index:90;pointer-events:none;animation:sparkfly .9s ease-out both}
+@keyframes sparkfly{from{opacity:1;transform:none}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div id="bg" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 2v20M16 2v20M8 7h8M8 12h8M8 17h8"/></svg>
+      <span>Improvement Ladder</span>
+    </div>
+    <span class="datechip" id="dateChip"></span>
+  </header>
+  <main>
+    <section class="view" id="view-today" aria-label="Today"></section>
+    <section class="view" id="view-history" aria-label="History"></section>
+    <section class="view" id="view-settings" aria-label="Settings"></section>
+  </main>
+</div>
+
+<nav class="tabbar" aria-label="Main">
+  <button class="tab active" data-tab="today" aria-label="Today">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 2v20M16 2v20M8 7h8M8 12h8M8 17h8"/></svg>
+    Today</button>
+  <button class="tab" data-tab="history" aria-label="History">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    History</button>
+  <button class="tab" data-tab="settings" aria-label="Settings">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2.4"/><circle cx="7" cy="16" r="2.4"/></svg>
+    Settings</button>
+</nav>
+
+<div id="toasts" aria-live="polite"></div>
+<div id="ovl-root"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Improvement Ladder — single-user offline PWA
+   ============================================================ */
+
+/* ---------- static data ---------- */
+const CTX = ["Uni","Work","Gym","Shops","Friends","Chill"];
+const CODE = {A:"Anywhere",U:"Uni",W:"Work",G:"Gym",S:"Shops",F:"Friends",C:"Chill"};
+
+/* [tier, text, contexts, weighted] — id = index+1 */
+const RAW = [
+[1,`Hold eye contact with one person until they pass.`,"A",0],
+[1,`Give one stranger a nod as you pass them.`,"A",0],
+[1,`Smile at one person today, even if they don't smile back.`,"A",0],
+[1,`Stand up straight the whole time you're out, shoulders back.`,"A",0],
+[1,`Go one full outing without checking your hair.`,"A",0],
+[1,`Text one person something small ("saw this, thought of you").`,"A",0],
+[1,`React to or reply to someone's story instead of just scrolling.`,"A",0],
+[1,`Say "morning" or "hey" to one person you pass.`,"U,G,S",0],
+[1,`Hold a two-second glance and smile instead of looking away first.`,"A",1],
+[1,`Walk in the front entrance, past people, instead of skirting the edge.`,"U,G,S",1],
+[2,`Say "cheers" or "have a good one" to a cashier.`,"S",0],
+[2,`Greet the gym staff on the way in.`,"G",0],
+[2,`Say "thanks, you too" and actually look at the person.`,"S,G,U",0],
+[2,`Answer "how are you?" with a word plus "you?" back.`,"S,W,U",0],
+[2,`Greet a coworker you'd normally just nod at.`,"W",0],
+[2,`Send one person a meme or something that made you laugh.`,"A",0],
+[2,`Text a friend "how've you been?" out of nowhere.`,"A",0],
+[2,`Thank a server properly, with eye contact, not a mumble.`,"S",0],
+[2,`Say a genuine "have a good one" and use their name off their badge.`,"S",0],
+[2,`Hold the door and say something, not just a silent hold.`,"U,G,S",0],
+[3,`Ask a shop worker where something is.`,"S",0],
+[3,`Ask a café worker what they'd recommend.`,"S",0],
+[3,`Ask "how's your day going?" to a cashier and wait for the answer.`,"S",0],
+[3,`Order something slightly complicated without rushing or apologising.`,"S",0],
+[3,`Ask someone at the gym how many sets they've got left.`,"G",0],
+[3,`Ask a stranger to take a photo of you somewhere.`,"S,G,U",0],
+[3,`Text someone a genuine compliment or a "proud of you."`,"A",0],
+[3,`Reply properly to a message you've been leaving on read.`,"A",0],
+[3,`Ask a stranger for a quick recommendation (coffee, food, spot nearby).`,"S,U",0],
+[3,`Make the cashier laugh or smile before you leave.`,"S",1],
+[4,`Compliment a staff member on good service, then leave.`,"S,G",0],
+[4,`Recommend a product to a customer.`,"W",0],
+[4,`Give one stranger a genuine compliment ("nice jacket") and keep walking.`,"U,G,S",1],
+[4,`Make a one-line comment to someone waiting near you.`,"U,G,S",0],
+[4,`Compliment someone's dog and pet it if allowed.`,"S,C",0],
+[4,`Say something to the person next to you at the gym (machine, form, routine).`,"G",0],
+[4,`Text someone "we should catch up soon" and mean it.`,"A",0],
+[4,`Ask a friend what they're up to this week.`,"A",0],
+[4,`Compliment something a classmate made, wore, or said.`,"U",0],
+[4,`Give a stranger a compliment and actually wait for their reaction.`,"U,G,S",0],
+[5,`Make a passing joke to a stranger about a shared situation.`,"U,G,S",1],
+[5,`Chat to the person beside you while waiting for coffee.`,"S",0],
+[5,`Ask a stranger where they got something you like.`,"U,G,S",0],
+[5,`Let a 20-second exchange with a stranger end naturally.`,"U,G,S",0],
+[5,`Go and try something you've never done before.`,"A",0],
+[5,`Sit at a table with people at uni instead of alone.`,"U",1],
+[5,`Make one comment to a classmate near you ("did you catch that?").`,"U",0],
+[5,`Ask a classmate what they thought of the lecture or assignment.`,"U",0],
+[5,`Make a concrete plan with someone (a time, a place), not just "sometime."`,"F,A",0],
+[5,`Ask a friend if they want to come to the gym or shops with you.`,"F,A",0],
+[5,`Go somewhere new on your own — a café, area, or shop you've never been.`,"A",1],
+[5,`Order the thing the staff recommended and tell them after if it was good.`,"S",0],
+[6,`Ask a classmate a follow-up question after their answer.`,"U",0],
+[6,`Say "I'm Jon, by the way" to someone you've seen around.`,"U,G,W",0],
+[6,`Introduce yourself to someone brand new at your table.`,"U",1],
+[6,`Ask someone their name and use it back in the conversation.`,"U,G,W",0],
+[6,`Join an existing conversation with one small contribution.`,"U,W,F",0],
+[6,`Ask a classmate if they want to work on something together.`,"U",0],
+[6,`Sit next to the same person twice and build on last time.`,"U",0],
+[6,`Ask a coworker something personal-but-light (weekend, plans).`,"W",0],
+[6,`Call someone instead of texting.`,"F,A",1],
+[6,`Be the first to speak in a room where everyone's silent.`,"U,G,W",1],
+[7,`Keep a conversation going with three follow-up questions.`,"U,G,W,F",0],
+[7,`Share something about yourself unprompted in a chat.`,"U,W,F",0],
+[7,`Ask someone a real question ("what are you into outside of uni?").`,"U,W,F",1],
+[7,`Stay in a group conversation ten minutes without going quiet.`,"U,W,F",0],
+[7,`Tell a short story to a small group and hold the floor.`,"U,W,F",0],
+[7,`Make a group of people laugh once.`,"U,W,F",0],
+[7,`Make friends with a stranger — turn one chat into something ongoing.`,"U,G,S",1],
+[7,`Introduce two people you know to each other.`,"U,W,F",0],
+[7,`Ask a friend to hang out one-on-one.`,"F,A",1],
+[7,`Disagree with someone in conversation and hold your ground kindly.`,"U,W,F",0],
+[8,`Say what you actually want instead of "I don't mind."`,"F,U,W",1],
+[8,`Share an unpopular opinion in a group and hold it calmly.`,"U,W,F",0],
+[8,`Tell someone something true about yourself you'd normally hide.`,"F,U",0],
+[8,`Say "no" to something you don't want, without a long excuse.`,"A",0],
+[8,`Ask for help openly instead of pretending you've got it handled.`,"U,G,W",0],
+[8,`Let someone see you be bad at something new (climbing gym counts).`,"G,U",0],
+[8,`Film a video of yourself talking, watch it back, don't cringe-delete it.`,"A,C",1],
+[8,`Post something online that's genuinely you, not filtered for approval.`,"A,C",0],
+[8,`Wear or do something you like even if it might draw a comment.`,"A",0],
+[8,`Go a whole big outing without checking your hair once, on purpose.`,"A",1],
+[8,`Post a video or story with your actual voice or face in it.`,"A,C",0],
+[8,`Share an opinion out loud before checking what the room thinks.`,"U,W,F",0],
+[9,`Organise a group thing — you're the one who plans it.`,"F,A",0],
+[9,`Call someone you haven't spoken to in a while, out of the blue.`,"F,A",0],
+[9,`Invite a classmate or coworker to do something specific.`,"U,W",0],
+[9,`Ask a group if you can join them for something.`,"U,G,F",0],
+[9,`Start a conversation with someone purely because you want to, no excuse.`,"U,G,S",1],
+[9,`Speak up in front of a class or group voluntarily.`,"U,W",0],
+[9,`Do something mildly embarrassing on purpose, and survive it.`,"A",1],
+[9,`Give a genuine compliment to someone you find attractive, then leave it there.`,"U,G,S",0],
+[9,`Approach someone at an event and have a real conversation.`,"F,U",0],
+[9,`Sing, dance, or be loud somewhere you'd normally shrink.`,"A",0],
+[9,`Ask a group of strangers if you can join their table or game.`,"U,F",0],
+[10,`Keep a conversation with someone you fancy going past the point you'd bail.`,"U,G,S",0],
+[10,`Ask an attractive stranger a light question and let it become a chat.`,"U,G,S",0],
+[10,`Ask someone you've been chatting with to grab a coffee.`,"U,G,S",0],
+[10,`Ask for someone's number or socials after a good conversation.`,"U,G,S",0],
+[10,`Try to get rejected by someone — make rejection the goal so you can't lose.`,"U,G,S",1],
+[10,`Ask someone out on an actual date.`,"U,G,S",1]
+];
+const DARES = RAW.map((r,i)=>({id:String(i+1),tier:r[0],text:r[1],contexts:r[2].split(",").map(c=>CODE[c]),w:!!r[3]}));
+
+const QUOTES = [
+[`I have often wondered how it is that every man loves himself more than all the rest of men, but yet sets less value on his own opinion of himself than on the opinion of others.`,`Marcus Aurelius`],
+[`When someone is properly grounded in life, they shouldn't have to look outside themselves for approval.`,`Marcus Aurelius`],
+[`In a little while you will have forgotten everything; in a little while everything will have forgotten you.`,`Marcus Aurelius`],
+[`It's not what happens to you, but how you react to it that matters.`,`Epictetus`],
+[`I have already settled it for myself so flattery and criticism go down the same drain and I am quite free.`,`Georgia O'Keeffe`],
+[`Courage is resistance to fear, mastery of fear — not absence of fear.`,`Mark Twain`],
+[`I learned that courage was not the absence of fear, but the triumph over it.`,`Nelson Mandela`],
+[`Courage is not the absence of fear, but rather the judgment that something else is more important than one's fear.`,`Ambrose Redmoon`],
+[`I've been absolutely terrified every moment of my life — and I've never let it keep me from doing a single thing I wanted to do.`,`Georgia O'Keeffe`],
+[`You must do the thing you think you cannot do.`,`Eleanor Roosevelt`],
+[`The most difficult thing is the decision to act. The rest is merely tenacity.`,`Amelia Earhart`],
+[`Use your fear... it can take you to the place where you store your courage.`,`Amelia Earhart`],
+[`He who is not everyday conquering some fear has not learned the secret of life.`,`Ralph Waldo Emerson`],
+[`We suffer more often in imagination than in reality.`,`Seneca`],
+[`Man is not worried by real problems so much as by his imagined anxieties about real problems.`,`Epictetus`],
+[`You have power over your mind — not outside events. Realize this, and you will find strength.`,`Marcus Aurelius`],
+[`Confine yourself to the present.`,`Marcus Aurelius`],
+[`Give yourself a gift: the present moment.`,`Marcus Aurelius`],
+[`Do every act of your life as if it were your last.`,`Marcus Aurelius`],
+[`Life is short. That's all there is to say. Get what you can from the present.`,`Marcus Aurelius`],
+[`The whole future lies in uncertainty: live immediately.`,`Seneca`],
+[`Begin at once to live, and count each day as a separate life.`,`Seneca`],
+[`Carpe diem. Seize the day, boys. Make your lives extraordinary.`,`Dead Poets Society`],
+[`First say to yourself what you would be; and then do what you have to do.`,`Epictetus`],
+[`How long can you afford to put off who you really want to be?`,`Epictetus`],
+[`To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment.`,`Ralph Waldo Emerson`],
+[`Always do what you are afraid to do.`,`Ralph Waldo Emerson`],
+[`Why can't I try on different lives, like dresses, to see which fits best and is most becoming?`,`Sylvia Plath`],
+[`You miss 100% of the shots you don't take.`,`Wayne Gretzky`],
+[`I can accept failure, everyone fails at something. But I can't accept not trying.`,`Michael Jordan`],
+[`When they fail, their failure must be a challenge to others.`,`Amelia Earhart`],
+[`The worst enemy to creativity is self-doubt.`,`Sylvia Plath`],
+[`Failure is only the opportunity more intelligently to begin again.`,`Henry Ford`],
+[`A ship in harbor is safe, but that is not what ships are built for.`,`John A. Shedd`],
+[`If you want to improve, be content to be thought foolish and stupid.`,`Epictetus`],
+[`Difficulties strengthen the mind, as labor does the body.`,`Seneca`],
+[`Whether you think you can, or you think you can't — you're right.`,`Henry Ford`],
+[`...who at the worst, if he fails, at least fails while daring greatly.`,`Theodore Roosevelt`],
+[`To be great is to be misunderstood.`,`Ralph Waldo Emerson`],
+[`Do one thing every day that scares you.`,`Mary Schmich`]
+];
+
+const PROMPTS = [
+`How did today actually go?`,
+`What are you proud of today?`,
+`What felt easier than you expected?`,
+`Anything you want to remember?`,
+`What would you do differently tomorrow?`
+];
+
+const CORE_LINE = `Everyone forgets by tomorrow. They remember your triumphs, not your stumbles. You can be anyone today.`;
+
+/* completion copy — the win is the attempt */
+const TOASTS_N = [
+`One in. The streak lives.`,
+`Two down. Today's getting loud.`,
+`FULL SEND. Three for three.`
+];
+const TOAST_OVERRIDE = {
+"100":`You went looking for the no. That's the whole game won.`,
+"101":`You asked. Whatever they said, that was the win.`,
+"91":`Embarrassed on purpose and still standing. Proof.`
+};
+
+/* ---------- svg helpers ---------- */
+const IC = {
+flame:`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 22c4.2 0 7-2.8 7-7 0-3-1.8-5.2-3.3-7C14.6 6.4 13 4.4 12 2c-1 2.4-2.6 4.4-3.7 6C6.8 9.8 5 12 5 15c0 4.2 2.8 7 7 7Zm0-3.6c-1.8 0-3.1-1.3-3.1-3.1 0-1.3.8-2.4 1.5-3.3.6-.7 1.2-1.4 1.6-2.2.4.8 1 1.5 1.6 2.2.7.9 1.5 2 1.5 3.3 0 1.8-1.3 3.1-3.1 3.1Z"/></svg>`,
+peak:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 20 10 5l4 8 3-5 4 12Z"/></svg>`,
+spark:`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5 14.4 9.6 21.5 12l-7.1 2.4L12 21.5 9.6 14.4 2.5 12l7.1-2.4Z"/></svg>`,
+ladder:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 2v20M16 2v20M8 7h8M8 12h8M8 17h8"/></svg>`,
+check:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 12.5 5 5L19.5 7"/></svg>`,
+circle:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/></svg>`,
+reroll:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 6.3M20 5v6h-6"/></svg>`,
+};
+
+/* ---------- utils ---------- */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function pad(n){return String(n).padStart(2,"0");}
+function todayKey(){
+  try{const o=localStorage.getItem("il-debug-date");if(o)return o;}catch(e){}
+  const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+}
+function keyToDate(k){return new Date(k+"T12:00:00");}
+function daysBetween(k1,k2){
+  const a=k1.split("-").map(Number),b=k2.split("-").map(Number);
+  return Math.round((Date.UTC(b[0],b[1]-1,b[2])-Date.UTC(a[0],a[1]-1,a[2]))/86400000);
+}
+function fmtShort(k){return keyToDate(k).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});}
+function fmtLong(k){return keyToDate(k).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});}
+function dayOrdinal(k){const a=k.split("-").map(Number);return Math.round(Date.UTC(a[0],a[1]-1,a[2])/86400000);}
+
+/* ---------- storage ---------- */
+const KEY="improvement-ladder-v1";
+let DB;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){console.warn("save failed",e);}}
+function load(){try{const s=localStorage.getItem(KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+function initDB(){
+  return {version:1,
+    state:{level:0,banked:0,streak:0,best:0,quoteOrder:shuffle(QUOTES.map((_,i)=>i)),quotePos:0,lastContexts:[],today:null},
+    history:{},custom:[]};
+}
+
+/* ---------- levels ---------- */
+function threshold(L){return 10*L*(L+2);}           /* cumulative pts to reach level L */
+function levelFor(p){for(let L=19;L>=0;L--)if(p>=threshold(L))return L;return 0;}
+function tierSplit(L){
+  if(L<=0)return[1,1,1];
+  if(L>=19)return[10,10,10];
+  const a=Math.floor((L+1)/2);
+  return (L%2===1)?[a,a,a+1]:[a,a+1,a+1];
+}
+function splitText(L){
+  const s=tierSplit(L),m={};s.forEach(t=>m[t]=(m[t]||0)+1);
+  return Object.keys(m).map(t=>`${m[t]}×Tier ${t}`).join(" + ");
+}
+
+/* ---------- dares pool ---------- */
+function allDares(){return DARES.concat(DB.custom.map(c=>({id:c.id,tier:c.tier,text:c.text,contexts:c.contexts,w:!!c.w,custom:true})));}
+function dareById(id){return allDares().find(d=>d.id===id);}
+function eligible(d,contexts){
+  if(contexts===null)return true;
+  return d.contexts.includes("Anywhere")||d.contexts.some(c=>contexts.includes(c));
+}
+function tickets(tier,contexts,exclude){
+  const out=[];
+  for(const d of allDares()){
+    if(d.tier!==tier||exclude.has(d.id)||!eligible(d,contexts))continue;
+    out.push(d);if(d.w)out.push(d);
+  }
+  return out;
+}
+function drawOne(tier,contexts,exclude){
+  /* current tier first, then strictly downward — never borrow from higher tiers */
+  const order=[];
+  for(let t=tier;t>=1;t--)order.push(t);
+  for(const t of order){const p=tickets(t,contexts,exclude);if(p.length)return p[Math.floor(Math.random()*p.length)];}
+  for(const t of order){const p=tickets(t,null,exclude);if(p.length)return p[Math.floor(Math.random()*p.length)];}
+  const rest=allDares().filter(d=>!exclude.has(d.id));
+  return rest.length?rest[Math.floor(Math.random()*rest.length)]:null;
+}
+function drawDay(){
+  const day=DB.state.today;
+  const split=tierSplit(DB.state.level);
+  const exclude=new Set(Object.keys(day.completed));
+  day.slots=[];
+  for(const t of split){
+    const d=drawOne(t,day.contexts,exclude);
+    if(d){day.slots.push({tier:t,id:d.id});exclude.add(d.id);}
+  }
+  save();
+}
+function doReroll(){
+  const day=DB.state.today;
+  if(day.rerollUsed||!day.slots)return;
+  const done=new Set(Object.keys(day.completed));
+  const exclude=new Set(done);
+  const oldIds=new Set(day.slots.filter(s=>!done.has(s.id)).map(s=>s.id));
+  day.slots.forEach(s=>{if(done.has(s.id))exclude.add(s.id);});
+  day.slots=day.slots.map(s=>{
+    if(done.has(s.id))return s;
+    const withOld=new Set([...exclude,...oldIds]);
+    let d=drawOne(s.tier,day.contexts,withOld)||drawOne(s.tier,day.contexts,exclude);
+    if(!d)return s;
+    exclude.add(d.id);
+    return {tier:s.tier,id:d.id};
+  });
+  day.rerollUsed=true;
+  save();
+  toast("Fresh three. Same day, new doors.");
+}
+
+/* ---------- scoring ---------- */
+function doneCount(day){return Object.keys(day.completed).length;}
+function darePts(n){return [0,10,25,40][Math.min(n,3)];}
+function dayPoints(day){return darePts(doneCount(day))+((day.journal||"").trim()?5:0);}
+function totalPoints(){return DB.state.banked+(DB.state.today?dayPoints(DB.state.today):0);}
+function checkLevel(){
+  const lv=levelFor(totalPoints());
+  if(lv>DB.state.level){DB.state.level=lv;save();showLevelUp(lv);}
+}
+
+/* ---------- day lifecycle ---------- */
+function makeDay(key){
+  const st=DB.state;
+  if(st.quotePos>=QUOTES.length){
+    const last=st.quoteOrder[st.quoteOrder.length-1];
+    let o=shuffle(QUOTES.map((_,i)=>i));
+    if(o[0]===last&&o.length>1){const j=1+Math.floor(Math.random()*(o.length-1));[o[0],o[j]]=[o[j],o[0]];}
+    st.quoteOrder=o;st.quotePos=0;
+  }
+  st.today={dateKey:key,contexts:st.lastContexts.slice(),slots:null,completed:{},rerollUsed:false,
+    journal:"",quoteIdx:st.quoteOrder[st.quotePos],promptIdx:dayOrdinal(key)%PROMPTS.length,
+    quoteSeen:false,bestBefore:st.best,credited:false};
+  save();
+}
+function finalizeDay(day){
+  const n=doneCount(day),pts=dayPoints(day);
+  DB.history[day.dateKey]={
+    d:day.dateKey,cx:day.contexts,n,pts,j:(day.journal||"").trim(),
+    dares:(day.slots||[]).map(s=>{
+      const d=dareById(s.id)||{tier:s.tier,text:"(removed dare)"};
+      const c=day.completed[s.id];
+      return {id:s.id,tier:d.tier,text:d.text,done:!!c,note:c?(c.note||"").trim():""};
+    })
+  };
+  DB.state.banked+=pts;
+  DB.state.lastContexts=day.contexts.slice();
+  if(n===0)DB.state.streak=0;
+}
+function ensureDay(){
+  const now=todayKey(),st=DB.state;
+  if(!st.today){makeDay(now);return true;}
+  if(st.today.dateKey===now)return false;
+  const old=st.today;
+  finalizeDay(old);
+  if(daysBetween(old.dateKey,now)>1)st.streak=0;   /* missed days = 0-dare days */
+  st.quotePos++;
+  makeDay(now);
+  return true;
+}
+
+/* ---------- actions ---------- */
+function toggleDare(id){
+  const day=DB.state.today,st=DB.state;
+  if(day.completed[id]){
+    delete day.completed[id];
+    if(doneCount(day)===0&&day.credited){st.streak=Math.max(0,st.streak-1);day.credited=false;st.best=Math.max(day.bestBefore,st.streak);}
+  }else{
+    day.completed[id]={note:"",at:Date.now()};
+    if(!day.credited){st.streak++;day.credited=true;st.best=Math.max(st.best,st.streak);}
+    const n=doneCount(day);
+    toast(TOAST_OVERRIDE[id]||TOASTS_N[Math.min(n,3)-1]);
+    if(n===3)sparks();
+  }
+  save();checkLevel();renderToday();
+}
+function setNote(id,txt){const c=DB.state.today.completed[id];if(c){c.note=txt;save();}}
+let jTimer=null;
+function setJournal(txt){
+  DB.state.today.journal=txt;
+  clearTimeout(jTimer);
+  jTimer=setTimeout(()=>{save();checkLevel();updateStatsUI();flashSaved();},450);
+}
+
+/* ---------- toast & fx ---------- */
+function toast(msg){
+  const t=document.createElement("div");t.className="toast";t.textContent=msg;
+  $("#toasts").appendChild(t);
+  setTimeout(()=>{t.classList.add("out");setTimeout(()=>t.remove(),450);},2400);
+}
+function sparks(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const cx=innerWidth/2,cy=innerHeight*0.45;
+  for(let i=0;i<16;i++){
+    const s=document.createElement("div");s.className="spark";
+    const a=Math.random()*Math.PI*2,r=60+Math.random()*110;
+    s.style.left=cx+"px";s.style.top=cy+"px";
+    s.style.setProperty("--dx",Math.cos(a)*r+"px");
+    s.style.setProperty("--dy",(Math.sin(a)*r-70)+"px");
+    document.body.appendChild(s);setTimeout(()=>s.remove(),950);
+  }
+}
+
+/* ---------- overlays ---------- */
+function openOvl(html,cls){
+  const root=$("#ovl-root");
+  root.innerHTML=`<div class="ovl ${cls||""}" role="dialog" aria-modal="true">${html}</div>`;
+  const o=root.firstElementChild;
+  requestAnimationFrame(()=>o.classList.add("show"));
+  return o;
+}
+function closeOvl(){
+  const o=$("#ovl-root .ovl");
+  if(!o)return;
+  o.classList.remove("show");setTimeout(()=>{$("#ovl-root").innerHTML="";},280);
+}
+
+function showQuote(){
+  const day=DB.state.today,q=QUOTES[day.quoteIdx];
+  const o=openOvl(`
+    <div class="qwrap" id="quoteOvl-in">
+      <div class="qsun" aria-hidden="true"></div>
+      <div class="qtxt">“${esc(q[0])}”</div>
+      <div class="qwho">— ${esc(q[1])}</div>
+      <button class="btn btn-primary qbtn" id="qGo">Step up</button>
+    </div>`,"");
+  o.id="quoteOvl";
+  o.querySelector("#qGo").addEventListener("click",()=>{
+    day.quoteSeen=true;save();closeOvl();
+    if(!day.slots)setTimeout(()=>showContextSheet(false),320);
+  });
+}
+
+function showContextSheet(editMode){
+  const day=DB.state.today;
+  const sel=new Set(day.contexts);
+  const o=openOvl(`
+    <div class="sheet">
+      <h2>${editMode?"Adjust today's contexts":"What does today hold?"}</h2>
+      <p class="sub">${editMode?"Already-drawn dares stay. This changes what a reroll can pull from.":"Pick everywhere today might take you. “Anywhere” dares are always in play."}</p>
+      <div class="chips" id="cxChips">
+        ${CTX.map(c=>`<button class="chip ${sel.has(c)?"on":""}" data-cx="${c}" aria-pressed="${sel.has(c)}">${c}</button>`).join("")}
+      </div>
+      <button class="btn btn-primary" id="cxGo">${editMode?"Save contexts":"Draw my three"}</button>
+    </div>`);
+  o.querySelector("#cxChips").addEventListener("click",e=>{
+    const b=e.target.closest(".chip");if(!b)return;
+    const c=b.dataset.cx;
+    if(sel.has(c))sel.delete(c);else sel.add(c);
+    b.classList.toggle("on");b.setAttribute("aria-pressed",sel.has(c));
+  });
+  o.querySelector("#cxGo").addEventListener("click",()=>{
+    day.contexts=CTX.filter(c=>sel.has(c));
+    save();closeOvl();
+    if(!day.slots){drawDay();}
+    renderToday();
+  });
+}
+
+function showLevelUp(lv){
+  const o=openOvl(`
+    <div class="sheet lvlup">
+      <div class="cap">Rung climbed</div>
+      <div class="big">L${lv}</div>
+      <div class="note">${lv>=19?"Top of the ladder. All three dares now draw from Tier 10.":"Your days now draw "+splitText(lv)+"."}</div>
+      <button class="btn btn-primary" id="luGo">Keep climbing</button>
+    </div>`,"center");
+  sparks();
+  o.querySelector("#luGo").addEventListener("click",()=>{closeOvl();renderToday();});
+}
+
+function showRerollConfirm(){
+  const o=openOvl(`
+    <div class="sheet">
+      <h2>Use your one reroll?</h2>
+      <p class="sub">All three go back in the deck and redraw fresh. Anything already completed stays completed and keeps its points.</p>
+      <button class="btn btn-primary" id="rrYes">Reroll the day</button>
+      <button class="btn btn-ghost" id="rrNo">Keep these</button>
+    </div>`);
+  o.querySelector("#rrYes").addEventListener("click",()=>{closeOvl();doReroll();renderToday();});
+  o.querySelector("#rrNo").addEventListener("click",closeOvl);
+}
+
+function showDayDetail(key){
+  const rec=(key===DB.state.today.dateKey)?liveRecord():DB.history[key];
+  if(!rec)return;
+  const o=openOvl(`
+    <div class="sheet">
+      <h2>${esc(fmtLong(key))}</h2>
+      <p class="sub">${rec.n}/3 dares · ${rec.pts} pts${rec.cx&&rec.cx.length?" · "+rec.cx.join(", "):""}</p>
+      <div>
+        ${(rec.dares||[]).map(d=>`
+          <div class="det-dare ${d.done?"done":""}">
+            <span class="ic">${d.done?IC.check:IC.circle}</span>
+            <div><div class="t">${esc(d.text)} <span class="t-chip">T${d.tier}</span></div>
+            ${d.note?`<div class="n">“${esc(d.note)}”</div>`:""}</div>
+          </div>`).join("")||`<p class="sub">No dares drawn this day.</p>`}
+        ${rec.j?`<div class="det-j">${esc(rec.j)}</div>`:""}
+      </div>
+      <button class="btn btn-ghost" id="ddClose" style="margin-top:16px">Close</button>
+    </div>`);
+  o.querySelector("#ddClose").addEventListener("click",closeOvl);
+  o.addEventListener("click",e=>{if(e.target===o)closeOvl();});
+}
+function liveRecord(){
+  const day=DB.state.today;
+  return {d:day.dateKey,cx:day.contexts,n:doneCount(day),pts:dayPoints(day),j:(day.journal||"").trim(),
+    dares:(day.slots||[]).map(s=>{
+      const d=dareById(s.id)||{tier:s.tier,text:"(removed dare)"};
+      const c=day.completed[s.id];
+      return {id:s.id,tier:d.tier,text:d.text,done:!!c,note:c?(c.note||"").trim():""};
+    })};
+}
+
+/* ---------- custom dare editor ---------- */
+function showDareEditor(existing){
+  const sel=new Set(existing?existing.contexts:[]);
+  const opts=["Anywhere"].concat(CTX);
+  const o=openOvl(`
+    <div class="sheet">
+      <h2>${existing?"Edit dare":"New custom dare"}</h2>
+      <p class="sub">Your ladder, your rungs.</p>
+      <div class="field"><label for="cdText">The dare</label>
+        <input type="text" id="cdText" maxlength="140" placeholder="e.g. Ask the barista their favourite order" value="${existing?esc(existing.text):""}"></div>
+      <div class="field"><label for="cdTier">Tier</label>
+        <select id="cdTier">${Array.from({length:10},(_,i)=>`<option value="${i+1}" ${existing&&existing.tier===i+1?"selected":""}>Tier ${i+1}</option>`).join("")}</select></div>
+      <div class="field"><label>Contexts</label>
+        <div class="chips" style="margin-bottom:0" id="cdChips">
+          ${opts.map(c=>`<button class="chip ${sel.has(c)?"on":""}" data-cx="${c}" aria-pressed="${sel.has(c)}">${c}</button>`).join("")}
+        </div></div>
+      <div class="switchrow"><span class="cap">⭐×2 weight (twice as likely to be drawn)</span>
+        <button class="chip ${existing&&existing.w?"on":""}" id="cdW" aria-pressed="${!!(existing&&existing.w)}">×2</button></div>
+      <button class="btn btn-primary" id="cdSave" style="margin-top:14px">${existing?"Save changes":"Add dare"}</button>
+      <button class="btn btn-ghost" id="cdCancel">Cancel</button>
+    </div>`);
+  o.querySelector("#cdChips").addEventListener("click",e=>{
+    const b=e.target.closest(".chip");if(!b)return;
+    const c=b.dataset.cx;
+    if(sel.has(c))sel.delete(c);else sel.add(c);
+    b.classList.toggle("on");b.setAttribute("aria-pressed",sel.has(c));
+  });
+  const wBtn=o.querySelector("#cdW");
+  wBtn.addEventListener("click",()=>{wBtn.classList.toggle("on");wBtn.setAttribute("aria-pressed",wBtn.classList.contains("on"));});
+  o.querySelector("#cdCancel").addEventListener("click",closeOvl);
+  o.querySelector("#cdSave").addEventListener("click",()=>{
+    const text=o.querySelector("#cdText").value.trim();
+    if(!text){toast("Give the dare some words first.");return;}
+    const tier=Number(o.querySelector("#cdTier").value);
+    const contexts=opts.filter(c=>sel.has(c));
+    if(!contexts.length)contexts.push("Anywhere");
+    const w=wBtn.classList.contains("on");
+    if(existing){Object.assign(existing,{text,tier,contexts,w});}
+    else{DB.custom.push({id:"c"+Date.now(),text,tier,contexts,w});}
+    save();closeOvl();renderSettings();
+    toast(existing?"Dare updated.":"Added to the ladder.");
+  });
+}
+function confirmDeleteDare(c){
+  const o=openOvl(`
+    <div class="sheet">
+      <h2>Delete this dare?</h2>
+      <p class="sub">“${esc(c.text)}” — past completions stay in history; it just leaves the deck.</p>
+      <button class="btn btn-danger" id="delYes">Delete it</button>
+      <button class="btn btn-ghost" id="delNo">Keep it</button>
+    </div>`);
+  o.querySelector("#delYes").addEventListener("click",()=>{
+    DB.custom=DB.custom.filter(x=>x.id!==c.id);
+    const day=DB.state.today;
+    if(day.slots)day.slots=day.slots.map(s=>{
+      if(s.id!==c.id||day.completed[s.id])return s;
+      const excl=new Set([...(Object.keys(day.completed)),...day.slots.map(x=>x.id)]);
+      const d=drawOne(s.tier,day.contexts,excl);
+      return d?{tier:s.tier,id:d.id}:s;
+    });
+    save();closeOvl();renderSettings();renderToday();
+  });
+  o.querySelector("#delNo").addEventListener("click",closeOvl);
+}
+
+/* ---------- backup / restore ---------- */
+function doExport(){
+  const data=JSON.stringify(DB,null,1);
+  const name=`improvement-ladder-backup-${todayKey()}.json`;
+  const file=new File([data],name,{type:"application/json"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:"Improvement Ladder backup"}).catch(()=>{});
+    return;
+  }
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));
+  a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);
+  toast("Backup saved.");
+}
+function doRestore(file){
+  const r=new FileReader();
+  r.onload=()=>{
+    let obj;
+    try{obj=JSON.parse(r.result);}catch(e){toast("That file isn't a valid backup.");return;}
+    if(!obj||obj.version!==1||!obj.state||!obj.history){toast("That file isn't a valid backup.");return;}
+    const days=Object.keys(obj.history).length;
+    const pts=(obj.state.banked||0)+(obj.state.today?0:0);
+    const o=openOvl(`
+      <div class="sheet">
+        <h2>Replace everything with this backup?</h2>
+        <p class="sub">Backup holds ${days} day${days===1?"":"s"} of history, ${pts}+ pts, streak ${obj.state.streak||0}. Your current data will be overwritten. No undo.</p>
+        <button class="btn btn-danger" id="rsYes">Replace my data</button>
+        <button class="btn btn-ghost" id="rsNo">Cancel</button>
+      </div>`);
+    o.querySelector("#rsYes").addEventListener("click",()=>{
+      DB=obj;save();location.reload();
+    });
+    o.querySelector("#rsNo").addEventListener("click",closeOvl);
+  };
+  r.readAsText(file);
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+let tab="today";
+function switchTab(t){
+  tab=t;
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  $("#view-"+t).classList.add("active");
+  if(t==="today")renderToday();
+  if(t==="history")renderHistory();
+  if(t==="settings")renderSettings();
+  window.scrollTo(0,0);
+}
+
+function statsHTML(){
+  const st=DB.state,pts=totalPoints(),lv=st.level;
+  const cur=threshold(lv),next=lv>=19?null:threshold(lv+1);
+  const pct=next?Math.min(100,Math.round((pts-cur)/(next-cur)*100)):100;
+  return `
+  <div class="stats" id="statsRow">
+    <div class="tile ${st.streak>0?"hot":""}"><div class="ic">${IC.flame}</div><div class="num">${st.streak}</div><div class="lbl">Streak</div></div>
+    <div class="tile"><div class="ic">${IC.peak}</div><div class="num">${st.best}</div><div class="lbl">Best</div></div>
+    <div class="tile"><div class="ic">${IC.spark}</div><div class="num">${pts}</div><div class="lbl">Points</div></div>
+    <div class="tile"><div class="ic">${IC.ladder}</div><div class="num">L${lv}</div><div class="lbl">Level</div></div>
+  </div>
+  <div class="ladder">
+    <div class="rungs" aria-hidden="true">${Array.from({length:20},(_,i)=>`<span class="rung ${i<lv?"lit":i===lv?"cur":""}"></span>`).join("")}</div>
+    <div class="lvl-line"><span><b>Level ${lv}</b> · draws ${splitText(lv)}</span>
+    <span>${next?`${next-pts} pts to L${lv+1}`:"top rung"}</span></div>
+    <div class="lvlbar"><i style="width:${pct}%"></i></div>
+  </div>`;
+}
+function updateStatsUI(){
+  const el=$("#view-today");
+  if(!el.classList.contains("active"))return;
+  const anchor=el.querySelector("#statsAnchor");
+  if(anchor)anchor.innerHTML=statsHTML();
+  const pc=el.querySelector(".pts-chip");
+  if(pc)pc.textContent="+"+dayPoints(DB.state.today)+" pts today";
+}
+
+function renderToday(){
+  const day=DB.state.today,q=QUOTES[day.quoteIdx];
+  const n=doneCount(day);
+  const statusLines=[
+    "Three doors. Opening one keeps the climb alive.",
+    "Streak's safe. The next one is pure profit.",
+    "Two down. One more and today glows.",
+    "Full send. Look at you."
+  ];
+  let daresHTML;
+  if(!day.slots){
+    daresHTML=`<div class="panel" style="text-align:center">
+      <p style="margin:6px 0 14px">${esc(CORE_LINE)}</p>
+      <button class="btn btn-primary" id="pickCx">Pick today's contexts</button></div>`;
+  }else{
+    daresHTML=`<div class="dares day-n${n}">`+day.slots.map((s,i)=>{
+      const d=dareById(s.id)||{id:s.id,tier:s.tier,text:"(removed dare)",contexts:[],w:false};
+      const c=day.completed[d.id];
+      return `<article class="dare p${i%3} ${c?"done":""}">
+        <div class="head"><span class="t-chip">TIER ${d.tier}</span>${d.w?`<span class="star">⭐×2</span>`:""}</div>
+        <div class="txt">${esc(d.text)}</div>
+        <button class="done-btn" data-dare="${d.id}" aria-pressed="${!!c}">${c?IC.check+" Done — tap to undo":"Done it"}</button>
+        ${c?`<input class="note-in" data-note="${d.id}" maxlength="120" placeholder="One line for the record (optional)" value="${esc(c.note)}">`:""}
+      </article>`;
+    }).join("")+`</div>
+    <button class="reroll-btn" id="rerollBtn" ${day.rerollUsed?"disabled":""}>${IC.reroll} ${day.rerollUsed?"Reroll used for today":"Reroll all three · 1 left today"}</button>`;
+  }
+  const jr=(day.journal||"").trim();
+  $("#view-today").innerHTML=`
+    <p class="quote-sm">“${esc(q[0])}”<span class="who">— ${esc(q[1])}</span></p>
+    <div id="statsAnchor">${statsHTML()}</div>
+    <div class="cxrow">
+      ${day.contexts.length?day.contexts.map(c=>`<span class="cx-chip">${c}</span>`).join(""):`<span class="cx-chip">Anywhere only</span>`}
+      <button class="cx-edit" id="cxEdit">adjust</button>
+    </div>
+    <div class="daystatus"><span class="ds-txt ${n===3?"n3":""}">${statusLines[n]}</span><span class="pts-chip">+${dayPoints(day)} pts today</span></div>
+    ${daresHTML}
+    <div class="journal">
+      <div class="lbl"><span>Evening journal · optional · +5 pts</span><span class="saved" id="jSaved">saved</span></div>
+      <div class="prompt">${esc(PROMPTS[day.promptIdx])}</div>
+      <textarea id="jText" placeholder="Use the prompt or ignore it. Your page.">${esc(day.journal||"")}</textarea>
+      ${jr?"":`<p class="jhint">Journals earn points but never carry the streak — dares only.</p>`}
+    </div>`;
+  const v=$("#view-today");
+  const pick=v.querySelector("#pickCx");
+  if(pick)pick.addEventListener("click",()=>showContextSheet(false));
+  v.querySelector("#cxEdit").addEventListener("click",()=>showContextSheet(!!day.slots));
+  v.querySelectorAll(".done-btn").forEach(b=>b.addEventListener("click",()=>toggleDare(b.dataset.dare)));
+  v.querySelectorAll(".note-in").forEach(i=>i.addEventListener("input",()=>setNote(i.dataset.note,i.value)));
+  const rr=v.querySelector("#rerollBtn");
+  if(rr)rr.addEventListener("click",()=>{if(!day.rerollUsed)showRerollConfirm();});
+  v.querySelector("#jText").addEventListener("input",e=>setJournal(e.target.value));
+}
+function flashSaved(){
+  const el=$("#jSaved");if(!el)return;
+  el.classList.add("show");setTimeout(()=>el.classList.remove("show"),1200);
+}
+
+/* ---------- history ---------- */
+function recFor(key){
+  if(key===DB.state.today.dateKey)return liveRecord();
+  return DB.history[key]||null;
+}
+function renderHistory(){
+  const keys=Object.keys(DB.history).sort();
+  const tk=DB.state.today.dateKey;
+  const allKeys=keys.concat(keys.includes(tk)?[]:[tk]).sort();
+  const first=allKeys[0]||tk;
+
+  /* heatmap months, newest first */
+  let months=[];
+  {
+    let [y,m]=tk.split("-").map(Number);
+    const [fy,fm]=first.split("-").map(Number);
+    while(y>fy||(y===fy&&m>=fm)){months.push([y,m]);m--;if(m===0){m=12;y--;}}
+  }
+  const heat=months.map(([y,m])=>{
+    const firstDow=(new Date(y,m-1,1).getDay()+6)%7; /* Mon=0 */
+    const dim=new Date(y,m,0).getDate();
+    let cells="";
+    for(let i=0;i<firstDow;i++)cells+=`<span class="cell off"></span>`;
+    for(let d=1;d<=dim;d++){
+      const k=`${y}-${pad(m)}-${pad(d)}`;
+      const rec=recFor(k);
+      let cls="";
+      if(rec)cls=rec.n>0?("c"+Math.min(rec.n,3)):"drawn0";
+      const isToday=k===tk;
+      cells+=rec
+        ?`<button class="cell ${cls} ${isToday?"today":""}" data-day="${k}" aria-label="${fmtShort(k)}, ${rec.n} of 3"></button>`
+        :`<span class="cell ${isToday?"today":""}"></span>`;
+    }
+    const lbl=new Date(y,m-1,1).toLocaleDateString("en-GB",{month:"long",year:"numeric"});
+    return `<div class="month"><div class="mlbl">${lbl}</div>
+      <div class="dow">${["M","T","W","T","F","S","S"].map(d=>`<span>${d}</span>`).join("")}</div>
+      <div class="cells">${cells}</div></div>`;
+  }).join("");
+
+  /* climb list, newest on top */
+  const listKeys=allKeys.slice().reverse();
+  const climb=listKeys.map(k=>{
+    const rec=recFor(k);if(!rec)return "";
+    const doneTxt=rec.dares.filter(d=>d.done).map(d=>d.text).join(" · ");
+    return `<button class="daycard n${Math.min(rec.n,3)}" data-day="${k}">
+      <div class="row1"><span class="dt">${k===tk?"Today":esc(fmtShort(k))}</span>
+      <span class="cnt">${rec.n}/3 · ${rec.pts} pts${rec.n>=3?" · FULL SEND":""}</span></div>
+      <div class="sub">${doneTxt?esc(doneTxt):(rec.n===0?"Nothing marked done.":"")}${rec.j?" — journalled":""}</div>
+    </button>`;
+  }).join("");
+
+  $("#view-history").innerHTML=`
+    <div id="statsAnchorH">${statsHTML()}</div>
+    <h2 class="sec">The map</h2>
+    ${heat}
+    <h2 class="sec">The climb</h2>
+    ${keys.length===0&&doneCount(DB.state.today)===0
+      ?`<div class="empty">${esc(CORE_LINE)}</div>`
+      :`<div class="climb">${climb}</div>`}
+  `;
+  $("#view-history").querySelectorAll("[data-day]").forEach(el=>{
+    el.addEventListener("click",()=>showDayDetail(el.dataset.day));
+  });
+}
+
+/* ---------- settings ---------- */
+function renderSettings(){
+  const customs=DB.custom.map(c=>`
+    <div class="custom-item">
+      <div class="cx"><div class="t">${esc(c.text)}</div>
+      <div class="m">Tier ${c.tier} · ${c.contexts.join(", ")}${c.w?" · ⭐×2":""}</div></div>
+      <button class="mini" data-edit="${c.id}">Edit</button>
+      <button class="mini" data-del="${c.id}" aria-label="Delete dare">✕</button>
+    </div>`).join("");
+  $("#view-settings").innerHTML=`
+    <div class="panel">
+      <h3>Your dares</h3>
+      <p>Add your own rungs to the ladder. They join the deck at whatever tier you set.</p>
+      ${customs||`<p style="margin-bottom:12px;color:var(--text3)">None yet — the 101 built-ins are carrying the load.</p>`}
+      <button class="btn btn-ghost" id="addDare" style="margin-top:8px">Add a custom dare</button>
+    </div>
+    <div class="panel">
+      <h3>Backup</h3>
+      <p>Everything lives on this phone only. Back it up now and then — if Safari ever clears site data, this file is your climb.</p>
+      <button class="btn btn-primary" id="expBtn">Back up my data</button>
+      <button class="btn btn-ghost" id="impBtn">Restore from backup</button>
+      <input type="file" id="impFile" accept="application/json,.json" hidden>
+    </div>
+    <div class="about">
+      <p class="core">${esc(CORE_LINE)}</p>
+      <p>Proof over hype. The win is always the attempt.<br>Improvement Ladder v1.0</p>
+    </div>`;
+  const v=$("#view-settings");
+  v.querySelector("#addDare").addEventListener("click",()=>showDareEditor(null));
+  v.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>{
+    showDareEditor(DB.custom.find(c=>c.id===b.dataset.edit));
+  }));
+  v.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{
+    confirmDeleteDare(DB.custom.find(c=>c.id===b.dataset.del));
+  }));
+  v.querySelector("#expBtn").addEventListener("click",doExport);
+  v.querySelector("#impBtn").addEventListener("click",()=>v.querySelector("#impFile").click());
+  v.querySelector("#impFile").addEventListener("change",e=>{
+    if(e.target.files[0])doRestore(e.target.files[0]);
+    e.target.value="";
+  });
+}
+
+/* ---------- boot ---------- */
+function boot(){
+  DB=load()||initDB();
+  ensureDay();
+  $("#dateChip").textContent=fmtShort(todayKey());
+  document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
+  switchTab("today");
+  const day=DB.state.today;
+  if(!day.quoteSeen)showQuote();
+  else if(!day.slots)showContextSheet(false);
+  if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  }
+}
+function rolloverWatch(){
+  if(!DB||!DB.state.today)return;
+  if(DB.state.today.dateKey!==todayKey()){
+    ensureDay();
+    $("#dateChip").textContent=fmtShort(todayKey());
+    switchTab("today");
+    showQuote();
+  }
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)rolloverWatch();});
+window.addEventListener("focus",rolloverWatch);
+window.addEventListener("pageshow",rolloverWatch);
+setInterval(rolloverWatch,30000);
+
+/* debug handle (harmless in production) */
+window.IL={get db(){return DB;},save,ensureDay,
+  timeTravel(k){if(k)localStorage.setItem("il-debug-date",k);else localStorage.removeItem("il-debug-date");rolloverWatch();renderToday();}};
+
+boot();
+</script>
+</body>
+</html>
