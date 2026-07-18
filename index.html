@@ -639,6 +639,24 @@ function purgeRemovedFromToday(){
   });
   if(changed)save();
 }
+/* after a context change, redraw uncompleted dares that no longer fit today's
+   contexts (Anywhere dares always fit; completed dares always stay) */
+function syncSlotsToContexts(){
+  const day=DB.state.today;
+  if(!day||!day.slots)return false;
+  let changed=false;
+  day.slots=day.slots.map(s=>{
+    if(day.completed[s.id])return s;
+    const d=dareById(s.id);
+    if(d&&eligible(d,day.contexts))return s;
+    const excl=new Set([...Object.keys(day.completed),...day.slots.map(x=>x.id)]);
+    const nd=drawOne(s.tier,day.contexts,excl);
+    if(nd){changed=true;return {tier:s.tier,id:nd.id};}
+    return s;
+  });
+  if(changed)save();
+  return changed;
+}
 function ensureDay(){
   const now=todayKey(),st=DB.state;
   if(!st.today){makeDay(now);return true;}
@@ -729,7 +747,7 @@ function showContextSheet(editMode){
   const o=openOvl(`
     <div class="sheet">
       <h2>${editMode?"Adjust today's contexts":"What does today hold?"}</h2>
-      <p class="sub">${editMode?"Already-drawn dares stay. This changes what a reroll can pull from.":"Pick everywhere today might take you. “Anywhere” dares are always in play."}</p>
+      <p class="sub">${editMode?"Dares that no longer fit get swapped for ones that do. Completed dares always stay.":"Pick everywhere today might take you. “Anywhere” dares are always in play."}</p>
       <div class="chips" id="cxChips">
         ${CTX.map(c=>`<button class="chip ${sel.has(c)?"on":""}" data-cx="${c}" aria-pressed="${sel.has(c)}">${c}</button>`).join("")}
       </div>
@@ -745,6 +763,7 @@ function showContextSheet(editMode){
     day.contexts=CTX.filter(c=>sel.has(c));
     save();closeOvl();
     if(!day.slots){drawDay();}
+    else if(syncSlotsToContexts()){toast("Swapped the dares that no longer fit.");}
     renderToday();
   });
 }
