@@ -624,6 +624,21 @@ function finalizeDay(day){
   DB.state.lastContexts=day.contexts.slice();
   if(n===0)DB.state.streak=0;
 }
+/* swap any removed dare out of today's draw (unless already completed) —
+   covers removals that arrive via an app update rather than the in-app delete */
+function purgeRemovedFromToday(){
+  const day=DB.state.today;
+  if(!day||!day.slots)return;
+  let changed=false;
+  day.slots=day.slots.map(s=>{
+    if(!DB.removed.includes(s.id)||day.completed[s.id])return s;
+    const excl=new Set([...Object.keys(day.completed),...day.slots.map(x=>x.id)]);
+    const nd=drawOne(s.tier,day.contexts,excl);
+    if(nd){changed=true;return {tier:s.tier,id:nd.id};}
+    return s;
+  });
+  if(changed)save();
+}
 function ensureDay(){
   const now=todayKey(),st=DB.state;
   if(!st.today){makeDay(now);return true;}
@@ -1139,6 +1154,7 @@ function renderSettings(){
 function boot(){
   DB=migrate(load()||initDB());
   ensureDay();
+  purgeRemovedFromToday();
   $("#dateChip").textContent=fmtShort(todayKey());
   document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
   switchTab("today");
