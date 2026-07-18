@@ -173,6 +173,7 @@ h1,h2,h3{margin:0;font-weight:700}
 .btn-ghost:active{background:rgba(255,255,255,.06)}
 .btn-danger{border:1.5px solid rgba(238,111,164,.6);color:var(--rose)}
 .btn+.btn{margin-top:10px}
+.tier-head{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:18px 2px 4px;font-weight:800}
 .custom-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
 .custom-item:first-of-type{border-top:0}
 .custom-item .cx{flex:1}
@@ -501,7 +502,12 @@ function load(){try{const s=localStorage.getItem(KEY);return s?JSON.parse(s):nul
 function initDB(){
   return {version:1,
     state:{level:0,banked:0,streak:0,best:0,quoteOrder:shuffle(QUOTES.map((_,i)=>i)),quotePos:0,lastContexts:[],today:null},
-    history:{},custom:[]};
+    history:{},custom:[],removed:["5","82"],edits:{}};
+}
+function migrate(db){
+  if(!db.removed)db.removed=["5","82"];   /* the hair-checking dares, dropped by request */
+  if(!db.edits)db.edits={};
+  return db;
 }
 
 /* ---------- levels ---------- */
@@ -519,8 +525,15 @@ function splitText(L){
 }
 
 /* ---------- dares pool ---------- */
-function allDares(){return DARES.concat(DB.custom.map(c=>({id:c.id,tier:c.tier,text:c.text,contexts:c.contexts,w:!!c.w,custom:true})));}
-function dareById(id){return allDares().find(d=>d.id===id);}
+function withEdits(d){const e=DB.edits[d.id];return e?{...d,...e,w:!!e.w,edited:true}:d;}
+function normCustom(c){return {id:c.id,tier:c.tier,text:c.text,contexts:c.contexts,w:!!c.w,custom:true};}
+/* the drawable deck: built-ins minus removed (with edits applied) plus customs */
+function allDares(){return DARES.filter(d=>!DB.removed.includes(d.id)).map(withEdits).concat(DB.custom.map(normCustom));}
+/* lookup resolves removed built-ins too, so history and today's slots keep their text */
+function dareById(id){
+  const b=DARES.find(d=>d.id===id);if(b)return withEdits(b);
+  const c=DB.custom.find(x=>x.id===id);return c?normCustom(c):undefined;
+}
 function eligible(d,contexts){
   if(contexts===null)return true;
   return d.contexts.includes("Anywhere")||d.contexts.some(c=>contexts.includes(c));
@@ -676,7 +689,7 @@ function openOvl(html,cls){
 function closeOvl(){
   const o=$("#ovl-root .ovl");
   if(!o)return;
-  o.classList.remove("show");setTimeout(()=>{$("#ovl-root").innerHTML="";},280);
+  o.classList.remove("show");setTimeout(()=>o.remove(),280);
 }
 
 function showQuote(){
@@ -776,14 +789,16 @@ function liveRecord(){
     })};
 }
 
-/* ---------- custom dare editor ---------- */
-function showDareEditor(existing){
+/* ---------- dare editor (customs and built-ins) ---------- */
+function isCustomId(id){return String(id).startsWith("c");}
+function showDareEditor(existing,onDone){
+  const done=onDone||(()=>{closeOvl();renderSettings();});
   const sel=new Set(existing?existing.contexts:[]);
   const opts=["Anywhere"].concat(CTX);
   const o=openOvl(`
     <div class="sheet">
-      <h2>${existing?"Edit dare":"New custom dare"}</h2>
-      <p class="sub">Your ladder, your rungs.</p>
+      <h2>${existing?(isCustomId(existing.id)?"Edit dare":"Edit built-in dare"):"New custom dare"}</h2>
+      <p class="sub">${existing&&!isCustomId(existing.id)?"Your version replaces the built-in one from now on.":"Your ladder, your rungs."}</p>
       <div class="field"><label for="cdText">The dare</label>
         <input type="text" id="cdText" maxlength="140" placeholder="e.g. Ask the barista their favourite order" value="${existing?esc(existing.text):""}"></div>
       <div class="field"><label for="cdTier">Tier</label>
@@ -805,7 +820,7 @@ function showDareEditor(existing){
   });
   const wBtn=o.querySelector("#cdW");
   wBtn.addEventListener("click",()=>{wBtn.classList.toggle("on");wBtn.setAttribute("aria-pressed",wBtn.classList.contains("on"));});
-  o.querySelector("#cdCancel").addEventListener("click",closeOvl);
+  o.querySelector("#cdCancel").addEventListener("click",()=>done());
   o.querySelector("#cdSave").addEventListener("click",()=>{
     const text=o.querySelector("#cdText").value.trim();
     if(!text){toast("Give the dare some words first.");return;}
@@ -813,32 +828,63 @@ function showDareEditor(existing){
     const contexts=opts.filter(c=>sel.has(c));
     if(!contexts.length)contexts.push("Anywhere");
     const w=wBtn.classList.contains("on");
-    if(existing){Object.assign(existing,{text,tier,contexts,w});}
-    else{DB.custom.push({id:"c"+Date.now(),text,tier,contexts,w});}
-    save();closeOvl();renderSettings();
+    if(!existing){DB.custom.push({id:"c"+Date.now(),text,tier,contexts,w});}
+    else if(isCustomId(existing.id)){const c=DB.custom.find(x=>x.id===existing.id);if(c)Object.assign(c,{text,tier,contexts,w});}
+    else{DB.edits[existing.id]={text,tier,contexts,w};}
+    save();renderToday();done();
     toast(existing?"Dare updated.":"Added to the ladder.");
   });
 }
-function confirmDeleteDare(c){
+function confirmDeleteDare(d,onDone){
+  const done=onDone||(()=>{closeOvl();renderSettings();});
   const o=openOvl(`
     <div class="sheet">
-      <h2>Delete this dare?</h2>
-      <p class="sub">“${esc(c.text)}” — past completions stay in history; it just leaves the deck.</p>
-      <button class="btn btn-danger" id="delYes">Delete it</button>
+      <h2>Drop this dare?</h2>
+      <p class="sub">“${esc(d.text)}” leaves the deck. Past completions stay in your history${isCustomId(d.id)?"":", and you can always re-add it later as a custom dare"}.</p>
+      <button class="btn btn-danger" id="delYes">Drop it</button>
       <button class="btn btn-ghost" id="delNo">Keep it</button>
     </div>`);
   o.querySelector("#delYes").addEventListener("click",()=>{
-    DB.custom=DB.custom.filter(x=>x.id!==c.id);
+    if(isCustomId(d.id))DB.custom=DB.custom.filter(x=>x.id!==d.id);
+    else if(!DB.removed.includes(d.id))DB.removed.push(d.id);
     const day=DB.state.today;
     if(day.slots)day.slots=day.slots.map(s=>{
-      if(s.id!==c.id||day.completed[s.id])return s;
+      if(s.id!==d.id||day.completed[s.id])return s;
       const excl=new Set([...(Object.keys(day.completed)),...day.slots.map(x=>x.id)]);
-      const d=drawOne(s.tier,day.contexts,excl);
-      return d?{tier:s.tier,id:d.id}:s;
+      const nd=drawOne(s.tier,day.contexts,excl);
+      return nd?{tier:s.tier,id:nd.id}:s;
     });
-    save();closeOvl();renderSettings();renderToday();
+    save();renderToday();done();
   });
-  o.querySelector("#delNo").addEventListener("click",closeOvl);
+  o.querySelector("#delNo").addEventListener("click",()=>done());
+}
+
+/* ---------- browse the whole deck ---------- */
+function showAllDares(){
+  const all=allDares();
+  const back=()=>{renderSettings();showAllDares();};
+  let rows="";
+  for(let t=1;t<=10;t++){
+    const list=all.filter(d=>d.tier===t);
+    if(!list.length)continue;
+    rows+=`<h3 class="tier-head">Tier ${t}</h3>`+list.map(d=>`
+      <div class="custom-item">
+        <div class="cx"><div class="t">${esc(d.text)}</div>
+        <div class="m">${d.contexts.join(", ")}${d.w?" · ⭐×2":""}${d.custom?" · custom":(d.edited?" · edited":"")}</div></div>
+        <button class="mini" data-edit="${d.id}">Edit</button>
+        <button class="mini" data-del="${d.id}" aria-label="Delete dare">✕</button>
+      </div>`).join("");
+  }
+  const o=openOvl(`
+    <div class="sheet">
+      <h2>The whole ladder</h2>
+      <p class="sub">${all.length} dares in the deck. Tweak or drop any of them — your history keeps what you've already done.</p>
+      ${rows}
+      <button class="btn btn-ghost" id="adClose" style="margin-top:16px">Close</button>
+    </div>`);
+  o.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>showDareEditor(dareById(b.dataset.edit),back)));
+  o.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>confirmDeleteDare(dareById(b.dataset.del),back)));
+  o.querySelector("#adClose").addEventListener("click",()=>{closeOvl();renderSettings();});
 }
 
 /* ---------- backup / restore ---------- */
@@ -1055,10 +1101,11 @@ function renderSettings(){
     </div>`).join("");
   $("#view-settings").innerHTML=`
     <div class="panel">
-      <h3>Your dares</h3>
-      <p>Add your own rungs to the ladder. They join the deck at whatever tier you set.</p>
-      ${customs||`<p style="margin-bottom:12px;color:var(--text3)">None yet — the 101 built-ins are carrying the load.</p>`}
-      <button class="btn btn-ghost" id="addDare" style="margin-top:8px">Add a custom dare</button>
+      <h3>The deck</h3>
+      <p>${allDares().length} dares in play. Browse the whole ladder to edit or drop any of them, or add rungs of your own.</p>
+      <button class="btn btn-ghost" id="browseDares">Browse all dares</button>
+      <button class="btn btn-ghost" id="addDare">Add a custom dare</button>
+      ${customs?`<h3 style="margin-top:16px">Your custom dares</h3>${customs}`:""}
     </div>
     <div class="panel">
       <h3>Backup</h3>
@@ -1072,12 +1119,13 @@ function renderSettings(){
       <p>Proof over hype. The win is always the attempt.<br>Improvement Ladder v1.0</p>
     </div>`;
   const v=$("#view-settings");
+  v.querySelector("#browseDares").addEventListener("click",showAllDares);
   v.querySelector("#addDare").addEventListener("click",()=>showDareEditor(null));
   v.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click",()=>{
-    showDareEditor(DB.custom.find(c=>c.id===b.dataset.edit));
+    showDareEditor(dareById(b.dataset.edit));
   }));
   v.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{
-    confirmDeleteDare(DB.custom.find(c=>c.id===b.dataset.del));
+    confirmDeleteDare(dareById(b.dataset.del));
   }));
   v.querySelector("#expBtn").addEventListener("click",doExport);
   v.querySelector("#impBtn").addEventListener("click",()=>v.querySelector("#impFile").click());
@@ -1089,7 +1137,7 @@ function renderSettings(){
 
 /* ---------- boot ---------- */
 function boot(){
-  DB=load()||initDB();
+  DB=migrate(load()||initDB());
   ensureDay();
   $("#dateChip").textContent=fmtShort(todayKey());
   document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));

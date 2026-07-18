@@ -1,5 +1,5 @@
 /* Improvement Ladder — offline cache */
-const CACHE = "il-v4";
+const CACHE = "il-v5";
 const ASSETS = [
   "./",
   "./index.html",
